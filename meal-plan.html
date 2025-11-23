@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Manager - Meal Plan</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Weekly Meal Plan</h1>
+            <button class="btn-primary" onclick="openAISuggestionsModal()" style="padding: 10px 20px; font-size: 14px;">
+                ✨ Get AI Suggestions
+            </button>
+        </header>
+
+        <main class="content">
+            <div id="mealPlanGrid" class="meal-plan-grid">
+                <!-- Meal plan days will be inserted here -->
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index-import.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span>Import</span>
+            </a>
+            <a href="recipe-book-2.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>Recipes</span>
+            </a>
+            <a href="meal-plan.html" class="nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Meal Plan</span>
+            </a>
+            <a href="#" class="nav-item disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+                <span>Shopping</span>
+            </a>
+            <a href="#" class="nav-item disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.2-14.2-4.2 4.2m-2 2-4.2 4.2M23 12h-6m-6 0H5m14.2 5.2-4.2-4.2m-2-2-4.2-4.2"/></svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Recipe Selector Modal -->
+    <div id="recipeSelectorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Recipe</h2>
+                <button class="modal-close" onclick="closeRecipeSelector()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="recipeSearchInput" placeholder="Search recipes..." style="width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                <div id="recipeSelectList" class="recipe-select-list">
+                    <!-- Recipe options will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Suggestions Modal -->
+    <div id="aiSuggestionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>AI Meal Plan Suggestions</h2>
+                <button class="modal-close" onclick="closeAISuggestionsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="aiSuggestionsContent" style="text-align: center; padding: 40px;">
+                    <p style="color: #666; margin-bottom: 20px;">Get balanced weekly meal suggestions based on your saved recipes</p>
+                    <button class="btn-primary" onclick="generateAISuggestions()">Generate Suggestions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="meal-plan.js"></script>
+</body>
+</html>
