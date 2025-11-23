@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialize Database - Recipe Society</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #8B9D83;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #6B7D63;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        .log-success {
+            color: #28a745;
+        }
+        .log-error {
+            color: #dc3545;
+        }
+        .log-info {
+            color: #007bff;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Database Initialization</h1>
+        <p class="subtitle">Set up your Recipe Society database with one click</p>
+
+        <div class="warning">
+            <strong>Good News!</strong> Your database tables are already set up and ready to use. Click the migration button below to transfer any existing data from localStorage to Supabase.
+        </div>
+
+        <button id="migrateBtn" onclick="migrateFromLocalStorage()">Migrate from localStorage</button>
+
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const supabaseUrl = 'https://detvxqorapoahvcvuaso.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRldHZ4cW9yYXBvYWh2Y3Z1YXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3Mzc1NDksImV4cCI6MjA3OTMxMzU0OX0.rxcendQVK_yl9kbcr8z-aVwe86DTKzMnxbNMjqc7oJE';
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+
+        window.migrateFromLocalStorage = async function() {
+            const btn = document.getElementById('migrateBtn');
+            btn.disabled = true;
+            log('Starting migration from localStorage...', 'info');
+
+            try {
+                const recipesJson = localStorage.getItem('recipes');
+                const mealPlanJson = localStorage.getItem('mealPlan');
+
+                if (!recipesJson) {
+                    log('No recipes found in localStorage', 'info');
+                } else {
+                    const recipes = JSON.parse(recipesJson);
+                    log(`Found ${recipes.length} recipes in localStorage`, 'info');
+
+                    for (const recipe of recipes) {
+                        const { error } = await supabase
+                            .from('recipes')
+                            .upsert([{
+                                id: recipe.id,
+                                title: recipe.title || 'Untitled Recipe',
+                                description: recipe.description || '',
+                                prep_time: recipe.prepTime || '',
+                                cook_time: recipe.cookTime || '',
+                                servings: recipe.servings || 0,
+                                ingredients: recipe.ingredients || [],
+                                instructions: recipe.instructions || [],
+                                source: recipe.source || '',
+                                source_url: recipe.sourceUrl || '',
+                                favorite: recipe.favorite || false
+                            }], { onConflict: 'id' });
+
+                        if (error) {
+                            log(`Error migrating recipe: ${recipe.title}`, 'error');
+                            console.error(error);
+                        } else {
+                            log(`Migrated: ${recipe.title}`, 'success');
+                        }
+                    }
+                }
+
+                if (!mealPlanJson) {
+                    log('No meal plan found in localStorage', 'info');
+                } else {
+                    const mealPlan = JSON.parse(mealPlanJson);
+                    const days = Object.keys(mealPlan);
+                    log(`Found meal plan for ${days.length} days`, 'info');
+
+                    for (const day of days) {
+                        for (const meal of Object.keys(mealPlan[day])) {
+                            const recipeId = mealPlan[day][meal];
+                            if (recipeId) {
+                                const { error } = await supabase
+                                    .from('meal_plans')
+                                    .upsert([{
+                                        day,
+                                        meal,
+                                        recipe_id: recipeId
+                                    }], { onConflict: 'day,meal' });
+
+                                if (error) {
+                                    log(`Error migrating meal plan for ${day} ${meal}`, 'error');
+                                    console.error(error);
+                                } else {
+                                    log(`Migrated meal: ${day} - ${meal}`, 'success');
+                                }
+                            }
+                        }
+                    }
+                }
+
+                log('Migration complete!', 'success');
+                log('Your data is now in Supabase. You can clear localStorage if desired.', 'info');
+
+            } catch (error) {
+                log(`Migration error: ${error.message}`, 'error');
+                console.error('Migration error:', error);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
